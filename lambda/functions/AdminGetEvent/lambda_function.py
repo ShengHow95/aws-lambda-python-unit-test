@@ -1,0 +1,53 @@
+import os
+import boto3
+from aws_lambda_powertools import Logger, Tracer
+
+# Custom Libraries
+from http_helper import HttpResponse
+from custom_exceptions import BadRequestError, NotFoundError
+
+# Environment Variables
+WEB_ORIGIN = os.environ.get('WEB_ORIGIN')
+EVENT_TABLE = os.environ.get('EVENT_TABLE')
+
+# AWS Client or Resource
+DDB_RESOURCE = boto3.resource('dynamodb')
+
+EVENT_DDB_TABLE = DDB_RESOURCE.Table(EVENT_TABLE)
+
+logger = Logger()
+tracer = Tracer()
+
+@tracer.capture_lambda_handler
+def lambda_handler(event, context):
+    try:
+        queryStringParameters = event.get('queryStringParameters') or {}
+        eventId = queryStringParameters.get('eventId')
+
+        if not queryStringParameters or not eventId:
+            raise BadRequestError('Invalid Parameters')
+        
+        event = get_event(eventId)
+        return HttpResponse(200, origin=WEB_ORIGIN, data=event)
+    except BadRequestError as ex:
+        return HttpResponse(400, origin=WEB_ORIGIN, data={'message': str(ex)})
+    except NotFoundError as ex:
+        return HttpResponse(404, origin=WEB_ORIGIN, data={'message': str(ex)})
+    except Exception as ex:
+        tracer.put_annotation('lambda_error', 'true')
+        tracer.put_annotation('lambda_name', context.function_name)
+        tracer.put_metadata('event', event)
+        tracer.put_metadata('message', str(ex))
+        logger.exception({'message': str(ex)})
+        return HttpResponse(500, origin=WEB_ORIGIN, data={'message': 'Something went wrong. Please try again later.'})
+
+@tracer.capture_method
+def get_event(eventId):
+    eventResp = EVENT_DDB_TABLE.get_item(
+        Key={'eventId': eventId}
+    )
+
+    if not eventResp.get('Item'):
+        raise NotFoundError('Event Not Found.')
+    
+    return eventResp.get('Item')

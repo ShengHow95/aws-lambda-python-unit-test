@@ -1,0 +1,5 @@
+pytest==6.2.5
+pytest-cov==3.0.0
+pytest-mock==3.8.2
+requests-mock==1.10.0
+moto[all]==4.0.1

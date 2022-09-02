@@ -1,0 +1,5 @@
+aws-lambda-powertools==1.25.3
+elasticsearch==8.1.0
+requests-aws4auth==1.1.1
+simplejson==3.17.6
+requests==2.25.1
