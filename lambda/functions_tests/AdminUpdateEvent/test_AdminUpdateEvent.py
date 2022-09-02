@@ -27,20 +27,20 @@ class TestAdminDeleteEvent():
         assert EventTable.name == EVENT_TABLE
         assert EventTable.global_secondary_indexes[0]['IndexName'] == globalSecondaryIndexes[0]
     
-    def test_checkSeoUrlExistence(self, dynamodb_resource):
+    def test_check_seourl_existence(self, dynamodb_resource):
         lambda_function = importlib.import_module("lambda.functions.AdminUpdateEvent.lambda_function")
 
         """ SeoUrl Not Exists """
-        response = lambda_function.checkSeoUrlExistence('test', 'test')
+        response = lambda_function.check_seourl_existence('test', 'test')
         assert response == []
 
         """ SeoUrl Exists """
-        response = lambda_function.checkSeoUrlExistence('test1', 'test2')
+        response = lambda_function.check_seourl_existence('test1', 'test2')
         data = DynamoDB_Get_Item(dynamodb_resource, EVENT_TABLE, EVENT_TABLE_PK, 'test2')
         assert response != []
         assert response == [data]
 
-        response = lambda_function.checkSeoUrlExistence('test2', 'test1')
+        response = lambda_function.check_seourl_existence('test2', 'test1')
         data = DynamoDB_Get_Item(dynamodb_resource, EVENT_TABLE, EVENT_TABLE_PK, 'test1')
         assert response != []
         assert response == [data]
@@ -113,35 +113,35 @@ class TestAdminDeleteEvent():
         lambda_function = importlib.import_module("lambda.functions.AdminUpdateEvent.lambda_function")
 
         """ All OK """
-        mocker.patch('lambda.functions.AdminUpdateEvent.lambda_function.checkSeoUrlExistence', return_value=[])
+        mocker.patch('lambda.functions.AdminUpdateEvent.lambda_function.check_seourl_existence', return_value=[])
         mocker.patch('lambda.functions.AdminUpdateEvent.lambda_function.update_event', return_value=json.loads(SampleLambdaEvent1['body']))
         response = lambda_function.lambda_handler(SampleLambdaEvent1, lambda_context)
         assert response['statusCode'] == 200
         assert json.loads(response['body']) == json.loads(SampleLambdaEvent1['body'])
 
         """ eventId is Empty String """
-        mocker.patch('lambda.functions.AdminUpdateEvent.lambda_function.checkSeoUrlExistence', return_value=[])
+        mocker.patch('lambda.functions.AdminUpdateEvent.lambda_function.check_seourl_existence', return_value=[])
         mocker.patch('lambda.functions.AdminUpdateEvent.lambda_function.update_event', return_value=json.loads(SampleLambdaEvent1['body']))
         response = lambda_function.lambda_handler(SampleLambdaEvent2, lambda_context)
         assert response['statusCode'] == 400
         assert json.loads(response['body'])['message'] == 'Invalid Parameters'
 
         """ eventId is None """
-        mocker.patch('lambda.functions.AdminUpdateEvent.lambda_function.checkSeoUrlExistence', return_value=[])
+        mocker.patch('lambda.functions.AdminUpdateEvent.lambda_function.check_seourl_existence', return_value=[])
         mocker.patch('lambda.functions.AdminUpdateEvent.lambda_function.update_event', return_value=json.loads(SampleLambdaEvent1['body']))
         response = lambda_function.lambda_handler(SampleLambdaEvent3, lambda_context)
         assert response['statusCode'] == 400
         assert json.loads(response['body'])['message'] == 'Invalid Parameters'
 
         """ SeoUrl Exists """
-        mocker.patch('lambda.functions.AdminUpdateEvent.lambda_function.checkSeoUrlExistence', return_value=InitialEventData)
+        mocker.patch('lambda.functions.AdminUpdateEvent.lambda_function.check_seourl_existence', return_value=InitialEventData)
         mocker.patch('lambda.functions.AdminUpdateEvent.lambda_function.update_event', return_value=json.loads(SampleLambdaEvent1['body']))
         response = lambda_function.lambda_handler(SampleLambdaEvent1, lambda_context)
         assert response['statusCode'] == 400
         assert json.loads(response['body'])['message'] == 'SeoUrl already exists.'
 
         """ Update Event Throws Exception """
-        mocker.patch('lambda.functions.AdminUpdateEvent.lambda_function.checkSeoUrlExistence', return_value=[])
+        mocker.patch('lambda.functions.AdminUpdateEvent.lambda_function.check_seourl_existence', return_value=[])
         mocker.patch('lambda.functions.AdminUpdateEvent.lambda_function.update_event', side_effect=Exception())
         response = lambda_function.lambda_handler(SampleLambdaEvent1, lambda_context)
         assert response['statusCode'] == 500

@@ -70,7 +70,7 @@ def lambda_handler(event, context):
         if not requestBody or event_.get('status') not in [EventStatus.ACTIVE, EventStatus.INACTIVE]:
             raise BadRequestError('Invalid Parameters')
         
-        if checkSeoUrlExistence(event_.get('seoUrl')):
+        if check_seourl_existence(event_.get('seoUrl')):
             raise BadRequestError('SeoUrl already exists.')
         
         create_event(event_)
@@ -88,7 +88,7 @@ def lambda_handler(event, context):
         return HttpResponse(500, origin=WEB_ORIGIN, data={'message': 'Something went wrong. Please try again later.'})
 
 @tracer.capture_method
-def checkSeoUrlExistence(seoUrl):
+def check_seourl_existence(seoUrl):
     eventResp = EVENT_DDB_TABLE.query(
         IndexName='gsi-seoUrl',
         KeyConditionExpression=Key('seoUrl').eq(seoUrl)
