@@ -1,7 +1,35 @@
 
-# Welcome to your CDK Python project!
+# AWS Lambda - Python Unit Test
 
-This is a blank project for CDK development with Python.
+## Problem Statement
+1. `AWS Lambda` is commonly being used together with other AWS Services such as `DynamoDB`, `S3` and `SQS`. 
+2. Conventional `Python` Unit Testing is not sufficient to perform unit test on `AWS Lambda Python` as it requires integration with AWS Services.
+
+---
+## This Repository
+1. Provides an example how AWS Services (e.g. *DynamoDB*) can be mocked to allow Unit Testing on `AWS Lambda Python`. 
+2. Provides an example how `AWS CDK` is used together in this project as demostration of `IAC` together with `AWS Lambda Python` Source Code.
+
+---
+## Dependencies Required
+requirements-test.txt
+```
+pytest==6.2.5
+pytest-cov==3.0.0
+pytest-mock==3.8.2
+requests-mock==1.10.0
+moto[all]==4.0.1
+```
+
+---
+## Pytest Command
+```
+python3 -m pytest lambda/functions_tests/*/test_*.py --capture=sys --cov=lambda/functions --cov-fail-under=95 --cov-report=term-missing
+```
+
+---
+
+# CDK Python Project Setup
 
 The `cdk.json` file tells the CDK Toolkit how to execute your app.
 
