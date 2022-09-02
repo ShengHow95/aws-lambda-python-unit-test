@@ -3,11 +3,13 @@ import os
 
 import aws_cdk as cdk
 
-from cdk_stacks.empty_stack import AwsLambdaPythonUnitTestStack
+from cdk_stacks.lambda_layer_stack import LambdaLayerStack
+from cdk_stacks.admin_lambda_stack import AdminLambdaStack
 
 
 app = cdk.App()
 
-AwsLambdaPythonUnitTestStack(app, "AwsLambdaPythonUnitTestStack")
+LambdaLayerStack(app, "A-LambdaLayerStack")
+AdminLambdaStack(app, "B-AdminLambdaStack")
 
 app.synth()
